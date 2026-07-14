@@ -13,6 +13,8 @@ class cameraLogic : public QObject
 {
     Q_OBJECT
 
+
+
 private:
     UdpWorker           *m_worker           = nullptr;
     QThread             *m_thread           = nullptr;
@@ -29,6 +31,8 @@ public:
 public:
     cameraLogic();
     ~cameraLogic();
+
+    quint8 cameraDeviceAddress = 0x01;
 
     int loadCameraSettings(Settings* settings);
 

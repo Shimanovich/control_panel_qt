@@ -22,6 +22,9 @@ int cameraLogic::loadCameraSettings(Settings* settings)
     this->cameraZoomPosList = settings->getZoomPositions();
     camNetInfo = settings->getTargetControl();
 
+    auto devAddrs = settings->getDeviceAddresses();
+    quint8 camAddr = devAddrs.camera;
+
     cameraProtocol = new MC108M3Camera();
 
 
@@ -38,9 +41,12 @@ int cameraLogic::loadCameraSettings(Settings* settings)
     m_thread->start();
 
 
-    cameraProtocol->setSendFunction([this](const QByteArray &data) {
+    cameraProtocol->setSendFunction([this, camAddr](const QByteArray &viscaPayload) {
         if (m_worker) {
-            m_worker->enqueueSend(data);
+            QByteArray fullMessage;
+            fullMessage.append(static_cast<char>(camAddr));
+            fullMessage.append(viscaPayload);
+            m_worker->enqueueSend(fullMessage);
         }
     });
 

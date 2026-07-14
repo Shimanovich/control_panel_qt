@@ -5,6 +5,23 @@
 
 Settings* Settings::s_instance = nullptr;
 
+Settings::DeviceAddresses Settings::getDeviceAddresses()
+{
+    DeviceAddresses addrs;
+    m_settings.beginGroup("deviceAddresses");
+    addrs.camera = m_settings.value("camera", 0x01).toUInt() & 0xFF;
+    addrs.gimbal = m_settings.value("gimbal", 0x02).toUInt() & 0xFF;
+    addrs.laser  = m_settings.value("laser",  0x03).toUInt() & 0xFF;
+    m_settings.endGroup();
+    return addrs;
+}
+
+quint8 Settings::getCameraDeviceAddress()
+{
+    return getDeviceAddresses().camera;
+}
+
+
 Settings* Settings::instance()
 {
     if (!s_instance)
