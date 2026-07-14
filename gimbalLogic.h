@@ -14,7 +14,6 @@ class gimbalLogic : public QObject
 
 private:
     UdpWorker     *m_worker = nullptr;
-    QThread       *m_thread = nullptr;
     SbgcProtocol  *gimbalProtocol = nullptr;
     bool           m_ownsWorker = true;
     quint8         m_deviceAddr = 0x02;
@@ -28,7 +27,6 @@ public:
 
     int loadGimbalSettings(Settings* settings, UdpWorker* sharedWorker = nullptr);
 
-    // Метод для установки сервера (вызывается из MainWindow)
     void setServer(const QHostAddress &addr, quint16 port);
 
     // Control methods
@@ -43,6 +41,7 @@ public slots:
 
 signals:
     void logMessage(const QString &message);
+    void realtimeDataReceived(const SBGC_cmd_realtime_data_t &data);  // structured signal
 };
 
 #endif // GIMBALLOGIC_H
