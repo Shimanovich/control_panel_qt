@@ -35,6 +35,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     mc108m3camera.cpp \
+    sbgcinterface.cpp \
     udpworker.cpp
 
 HEADERS += \
@@ -42,6 +43,7 @@ HEADERS += \
     cameralogic.h \
     mainwindow.h \
     mc108m3camera.hpp \
+    sbgcinterface.h \
     udpworker.h
 
 FORMS += \

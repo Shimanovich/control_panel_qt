@@ -5,6 +5,9 @@
 #include <QMainWindow>
 #include <QMessageBox>
 
+#include <QTimer>
+#include "SDL2/SDL.h"
+
 
 namespace Ui {
 class MainWindow;
@@ -37,8 +40,18 @@ private slots:
 
 private:
 
+
     Ui::MainWindow *ui = nullptr;
     cameraLogic    *m_cam = nullptr;
+
+private:
+    QTimer *m_joystickTimer = nullptr;
+    SDL_Joystick *m_joystick = nullptr;
+    SDL_JoystickID m_joystickID = -1;
+
+    void initJoystick();
+    void processJoystick();
+    void updateJoystickStatus(const QString &status);
 };
 
 #endif // MAINWINDOW_H
