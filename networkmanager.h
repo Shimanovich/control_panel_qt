@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QThread>
 #include <QHostAddress>
+#include <Settings.h>
 
 class NetworkManager : public QObject
 {

@@ -36,6 +36,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     mc108m3camera.cpp \
+    networkmanager.cpp \
+    sbgcinterface.cpp \
     sbgcprotocol.cpp \
     udpworker.cpp
 
@@ -45,8 +47,10 @@ HEADERS += \
     gimbalLogic.h \
     mainwindow.h \
     mc108m3camera.hpp \
+    networkmanager.h \
     sbgc.hpp \
     sbgcinterface.h \
+    sbgcprotocol.hpp \
     udpworker.h
 
 FORMS += \

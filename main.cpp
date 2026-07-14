@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     auto targetInfo = settings->getTargetControl();
     sharedUdpWorker->setTarget(QHostAddress(targetInfo.ip), targetInfo.port);
 
-    connect(udpThread, &QThread::started, sharedUdpWorker, &UdpWorker::init);
+    MainWindow::connect(udpThread, &QThread::started, sharedUdpWorker, &UdpWorker::init);
     udpThread->start();
 
     cam  = new cameraLogic();
