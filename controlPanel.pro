@@ -14,6 +14,7 @@ SDL2_PATH = d:/work/SDL2-2.0.14/x86_64-w64-mingw32/
 INCLUDEPATH += $$SDL2_PATH/include
 
 LIBS += -L$$SDL2_PATH/lib -lSDL2
+LIBS += -latomic   # fix __atomic_xxx symbols with lld
 
 # Копирование DLL в папку сборки (чтобы не копировать вручную)
 CONFIG(debug, debug|release) {
