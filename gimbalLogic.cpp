@@ -33,19 +33,23 @@ int gimbalLogic::loadGimbalSettings(Settings* settings, UdpWorker* sharedWorker)
         m_ownsWorker = true;
         m_worker = new UdpWorker();
         m_worker->setTarget(QHostAddress(gimbalNetInfo.ip), gimbalNetInfo.port);
-        // thread would be created here in old mode
     }
 
     gimbalProtocol->setSendFunction([this](const QByteArray &sbgcPacket) {
-        if (m_worker) {
-            QByteArray fullMsg;
-            fullMsg.append(static_cast<char>(m_deviceAddr));
-            fullMsg.append(sbgcPacket);
-            m_worker->enqueueSend(fullMsg);
-        }
+        sendWithAddr(sbgcPacket);
     });
 
     return 1;
+}
+
+void gimbalLogic::sendWithAddr(const QByteArray &payload)
+{
+    if (m_worker) {
+        QByteArray fullMsg;
+        fullMsg.append(static_cast<char>(m_deviceAddr));
+        fullMsg.append(payload);
+        m_worker->enqueueSend(fullMsg);
+    }
 }
 
 void gimbalLogic::setServer(const QHostAddress &addr, quint16 port)
@@ -76,7 +80,6 @@ void gimbalLogic::onReceived(const QByteArray &data, const QHostAddress &sender,
     QByteArray payload = data.mid(1);
 
     if (payload.size() < 4 || payload[0] != SBGC_CMD_START_BYTE) {
-        // log raw if needed
         return;
     }
 
@@ -87,8 +90,6 @@ void gimbalLogic::onReceived(const QByteArray &data, const QHostAddress &sender,
         SBGC_cmd_realtime_data_t rtd;
         std::memcpy(&rtd, payload.constData() + 4, sizeof(rtd));
 
-        emit realtimeDataReceived(rtd);
-
         QString log = QString("📊 [GIMBAL REALTIME_DATA_4 addr=0x%1] Angles IMU: %2° %3° %4° | Battery %5V | Current %6mA")
                         .arg(m_deviceAddr, 2, 16, QChar('0'))
                         .arg(rtd.imu_angle[0]*360.0/16384, 0, 'f', 1)
@@ -97,6 +98,8 @@ void gimbalLogic::onReceived(const QByteArray &data, const QHostAddress &sender,
                         .arg(rtd.battery_voltage / 100.0, 0, 'f', 2)
                         .arg(rtd.current);
         emit logMessage(log);
+
+        emit realtimeDataReceived(rtd);
     }
 }
 

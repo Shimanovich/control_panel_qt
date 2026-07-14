@@ -15,7 +15,6 @@ cameraLogic::~cameraLogic()
     if (m_ownsWorker) {
         delete m_worker;
     }
-    // cameraProtocol deleted separately if needed
 }
 
 int cameraLogic::loadCameraSettings(Settings* settings, UdpWorker* sharedWorker)
@@ -33,7 +32,6 @@ int cameraLogic::loadCameraSettings(Settings* settings, UdpWorker* sharedWorker)
     if (sharedWorker) {
         m_worker = sharedWorker;
         m_ownsWorker = false;
-        // Assume thread and init already handled externally
         connect(m_worker, &UdpWorker::received, this, &cameraLogic::onReceived, Qt::UniqueConnection);
     } else {
         m_ownsWorker = true;
@@ -50,15 +48,20 @@ int cameraLogic::loadCameraSettings(Settings* settings, UdpWorker* sharedWorker)
     }
 
     cameraProtocol->setSendFunction([this](const QByteArray &viscaPayload) {
-        if (m_worker) {
-            QByteArray fullMessage;
-            fullMessage.append(static_cast<char>(m_deviceAddr));
-            fullMessage.append(viscaPayload);
-            m_worker->enqueueSend(fullMessage);
-        }
+        sendWithAddr(viscaPayload);
     });
 
     return 1;
+}
+
+void cameraLogic::sendWithAddr(const QByteArray &payload)
+{
+    if (m_worker) {
+        QByteArray fullMessage;
+        fullMessage.append(static_cast<char>(m_deviceAddr));
+        fullMessage.append(payload);
+        m_worker->enqueueSend(fullMessage);
+    }
 }
 
 void cameraLogic::setServer(const QHostAddress &addr, quint16 port)
@@ -77,12 +80,6 @@ void cameraLogic::setServer(const QHostAddress &addr, quint16 port)
                         .arg(addr.toString()).arg(port));
 }
 
-
-
-/*
- * Обработка принятых ответов
- * Фильтрация по device address byte (первый байт)
- */
 void cameraLogic::onReceived(const QByteArray &data,
                              const QHostAddress &sender,
                              quint16 port)
@@ -91,13 +88,11 @@ void cameraLogic::onReceived(const QByteArray &data,
 
     quint8 firstByte = static_cast<quint8>(data[0]);
     if (firstByte != m_deviceAddr) {
-        return; // не для камеры
+        return;
     }
 
     QByteArray payload = data.mid(1);
 
-    // Для VISCA ответов можно передать в cameraProtocol->handleIncomingData(payload);
-    // Пока логируем
     QString hex = payload.toHex(' ').toUpper();
     QString logText = QString("📥 [CAMERA addr=0x%1] от %2:%3 → %4 байт: %5")
                           .arg(m_deviceAddr, 2, 16, QChar('0'))
@@ -115,7 +110,6 @@ void cameraLogic::zoom_wide()
 
     cameraProtocol->sendZoomDirect(cameraZoomPosList[zoom_index]);
     qDebug() << "Zoom Wide, index = "<< zoom_index;
-    //emit zoomWideRequested();
 }
 
 void cameraLogic::zoom_tele()
@@ -124,7 +118,6 @@ void cameraLogic::zoom_tele()
 
     cameraProtocol->sendZoomDirect(cameraZoomPosList[zoom_index]);
     qDebug() << "Zoom Tele, index =" << zoom_index;
-    //emit zoomTeleRequested();
 }
 
 void cameraLogic::fokus_auto()
@@ -139,12 +132,10 @@ void cameraLogic::fokus_inf()
     qDebug() << "Cmd Infyfokus";
 }
 
-
 void  cameraLogic::bright_minus()
 {
     cameraProtocol->sendBrightnessDown();
 }
-
 
 void cameraLogic::bright_plus()
 {
