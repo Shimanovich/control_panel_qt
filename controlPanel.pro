@@ -8,6 +8,27 @@ CONFIG += c++17
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+# SDL2
+SDL2_PATH = d:/work/SDL2-2.0.14/x86_64-w64-mingw32/
+
+INCLUDEPATH += $$SDL2_PATH/include
+
+LIBS += -L$$SDL2_PATH/lib -lSDL2
+
+# Копирование DLL в папку сборки (чтобы не копировать вручную)
+CONFIG(debug, debug|release) {
+    SDL2_DLL = $$SDL2_PATH/bin/SDL2.dll
+} else {
+    SDL2_DLL = $$SDL2_PATH/bin/SDL2.dll
+}
+
+
+copydata.commands = $(COPY_FILE) \"$$shell_path($$SDL2_DLL)\" \"$$shell_path($$OUT_PWD)\"
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
+
 SOURCES += \
     Settings.cpp \
     cameralogic.cpp \

@@ -4,7 +4,7 @@
 #include "cameralogic.h"
 #include <QMainWindow>
 #include <QMessageBox>
-#include "mc108m3camera.hpp"
+
 
 namespace Ui {
 class MainWindow;
@@ -34,8 +34,6 @@ private slots:
     void on_pushButton_Bright_minus_clicked();
 
     void on_pushButton_Bright_plus_clicked();
-
-    void on_zoomTeleButton_clicked();
 
 private:
 
