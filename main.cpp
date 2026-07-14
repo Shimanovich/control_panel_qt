@@ -3,7 +3,6 @@
 #include "cameralogic.h"
 #include "gimbalLogic.h"
 #include "mainwindow.h"
-#include "udpworker.h"
 #include "networkmanager.h"
 
 #include <QApplication>
