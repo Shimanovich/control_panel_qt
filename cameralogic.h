@@ -13,12 +13,12 @@ class cameraLogic : public QObject
 {
     Q_OBJECT
 
-
-
 private:
     UdpWorker           *m_worker           = nullptr;
     QThread             *m_thread           = nullptr;
     MC108M3Camera       *cameraProtocol     = nullptr;
+    bool                 m_ownsWorker       = true;
+    quint8               m_deviceAddr       = 0x01;
 
 public:
     // перечень возможных положений привода зума
@@ -32,9 +32,7 @@ public:
     cameraLogic();
     ~cameraLogic();
 
-    quint8 cameraDeviceAddress = 0x01;
-
-    int loadCameraSettings(Settings* settings);
+    int loadCameraSettings(Settings* settings, UdpWorker* sharedWorker = nullptr);
 
     // Метод для установки сервера (вызывается из MainWindow)
     void setServer(const QHostAddress &addr, quint16 port);
@@ -52,7 +50,6 @@ public slots:
 
 signals:
     void logMessage(const QString &message);
-
 
     void zoomWideRequested();
     void zoomTeleRequested();
