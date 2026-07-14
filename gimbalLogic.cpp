@@ -93,7 +93,6 @@ void gimbalLogic::onReceived(const QByteArray &rawData, const QHostAddress &send
         SBGC_cmd_realtime_data_t rtd;
         std::memcpy(&rtd, data.constData() + 4, sizeof(rtd));
 
-        // Nice formatted log of key fields
         QString log = QString("📊 [GIMBAL REALTIME_DATA_4]");
         log += QString(" Angles (IMU): R%1 P%2 Y%3°")
                   .arg(rtd.imu_angle[0]*360.0/16384, 0, 'f', 1)
