@@ -2,8 +2,6 @@
 #include <QDebug>
 #include "Settings.h"
 #include <QByteArray>
-
-// For reinterpret_cast safety
 #include <cstring>
 
 gimbalLogic::gimbalLogic()
@@ -12,38 +10,47 @@ gimbalLogic::gimbalLogic()
 
 gimbalLogic::~gimbalLogic()
 {
-    if (m_thread && m_thread->isRunning()) {
+    if (m_ownsWorker && m_thread && m_thread->isRunning()) {
         m_thread->quit();
         m_thread->wait(3000);
     }
-    delete m_worker;
+    if (m_ownsWorker) {
+        delete m_worker;
+    }
 }
 
-int gimbalLogic::loadGimbalSettings(Settings* settings)
+int gimbalLogic::loadGimbalSettings(Settings* settings, UdpWorker* sharedWorker)
 {
     if (!settings) return 0;
 
     gimbalNetInfo = settings->getTargetControl();
     auto devAddrs = settings->getDeviceAddresses();
-    quint8 gimbalAddr = devAddrs.gimbal;
+    m_deviceAddr = devAddrs.gimbal;
 
     gimbalProtocol = new SbgcProtocol();
 
-    m_worker = new UdpWorker();
-    m_worker->setTarget(QHostAddress(gimbalNetInfo.ip), gimbalNetInfo.port);
+    if (sharedWorker) {
+        m_worker = sharedWorker;
+        m_ownsWorker = false;
+        connect(m_worker, &UdpWorker::received, this, &gimbalLogic::onReceived, Qt::UniqueConnection);
+    } else {
+        m_ownsWorker = true;
+        m_worker = new UdpWorker();
+        m_worker->setTarget(QHostAddress(gimbalNetInfo.ip), gimbalNetInfo.port);
 
-    m_thread = new QThread(this);
-    m_worker->moveToThread(m_thread);
+        m_thread = new QThread(this);
+        m_worker->moveToThread(m_thread);
 
-    connect(m_thread, &QThread::started, m_worker, &UdpWorker::init);
-    connect(m_worker, &UdpWorker::received, this, &gimbalLogic::onReceived);
+        connect(m_thread, &QThread::started, m_worker, &UdpWorker::init);
+        connect(m_worker, &UdpWorker::received, this, &gimbalLogic::onReceived);
 
-    m_thread->start();
+        m_thread->start();
+    }
 
-    gimbalProtocol->setSendFunction([this, gimbalAddr](const QByteArray &sbgcPacket) {
+    gimbalProtocol->setSendFunction([this](const QByteArray &sbgcPacket) {
         if (m_worker) {
             QByteArray fullMsg;
-            fullMsg.append(static_cast<char>(gimbalAddr)); // device address byte (0th byte of UDP)
+            fullMsg.append(static_cast<char>(m_deviceAddr));
             fullMsg.append(sbgcPacket);
             m_worker->enqueueSend(fullMsg);
         }
@@ -68,56 +75,45 @@ void gimbalLogic::setServer(const QHostAddress &addr, quint16 port)
                         .arg(addr.toString()).arg(port));
 }
 
-void gimbalLogic::onReceived(const QByteArray &rawData, const QHostAddress &sender, quint16 port)
+void gimbalLogic::onReceived(const QByteArray &data, const QHostAddress &sender, quint16 port)
 {
-    QByteArray data = rawData;
+    if (data.isEmpty()) return;
 
-    // Skip possible device address byte (first byte) from central router
-    if (data.size() > 1 && (data[0] < 0x10 || data[0] > 0x7F)) { // rough heuristic: small values likely addr
-        data = data.mid(1);
+    quint8 firstByte = static_cast<quint8>(data[0]);
+    if (firstByte != m_deviceAddr) {
+        return; // не для gimbal
     }
 
-    if (data.size() < 4 || data[0] != SBGC_CMD_START_BYTE) {
-        QString hex = data.toHex(' ').toUpper();
-        emit logMessage(QString("📥 [GIMBAL] Raw data from %1:%2 (%3 bytes): %4")
-                            .arg(sender.toString()).arg(port).arg(rawData.size()).arg(hex));
+    QByteArray payload = data.mid(1);
+
+    if (payload.size() < 4 || payload[0] != SBGC_CMD_START_BYTE) {
+        QString hex = payload.toHex(' ').toUpper();
+        emit logMessage(QString("📥 [GIMBAL] Raw from %1:%2 (%3 bytes): %4")
+                            .arg(sender.toString()).arg(port).arg(payload.size()).arg(hex));
         return;
     }
 
-    // Parse SBGC packet
-    uint8_t cmdId = data[1];
-    uint8_t payloadSize = data[2];
-    uint8_t hcs = data[3];
+    uint8_t cmdId = payload[1];
+    uint8_t payloadSize = payload[2];
 
     if (cmdId == SBGC_CMD_REALTIME_DATA_4 && payloadSize >= sizeof(SBGC_cmd_realtime_data_t)) {
         SBGC_cmd_realtime_data_t rtd;
-        std::memcpy(&rtd, data.constData() + 4, sizeof(rtd));
+        std::memcpy(&rtd, payload.constData() + 4, sizeof(rtd));
 
-        QString log = QString("📊 [GIMBAL REALTIME_DATA_4]");
+        QString log = QString("📊 [GIMBAL REALTIME_DATA_4 addr=0x%1]")
+                        .arg(m_deviceAddr, 2, 16, QChar('0'));
         log += QString(" Angles (IMU): R%1 P%2 Y%3°")
                   .arg(rtd.imu_angle[0]*360.0/16384, 0, 'f', 1)
                   .arg(rtd.imu_angle[1]*360.0/16384, 0, 'f', 1)
                   .arg(rtd.imu_angle[2]*360.0/16384, 0, 'f', 1);
-        log += QString(" | Frame: R%1 P%2 Y%3°")
-                  .arg(rtd.frame_imu_angle[0]*360.0/16384, 0, 'f', 1)
-                  .arg(rtd.frame_imu_angle[1]*360.0/16384, 0, 'f', 1)
-                  .arg(rtd.frame_imu_angle[2]*360.0/16384, 0, 'f', 1);
-        log += QString(" | Target: R%1 P%2 Y%3°")
-                  .arg(rtd.target_angle[0]*360.0/16384, 0, 'f', 1)
-                  .arg(rtd.target_angle[1]*360.0/16384, 0, 'f', 1)
-                  .arg(rtd.target_angle[2]*360.0/16384, 0, 'f', 1);
-        log += QString(" | Battery: %1V | Current: %2mA")
+        log += QString(" | Battery: %1V | Current: %2mA | MotorPwr: R%3 P%4 Y%5")
                   .arg(rtd.battery_voltage / 100.0, 0, 'f', 2)
-                  .arg(rtd.current);
-        log += QString(" | Motor power: R%1% P%2% Y%3%")
+                  .arg(rtd.current)
                   .arg(rtd.motor_power[0]).arg(rtd.motor_power[1]).arg(rtd.motor_power[2]);
         log += QString(" | Temps: IMU %1°C Frame %2°C")
                   .arg(rtd.imu_temp_celcius).arg(rtd.frame_imu_temp_celcius);
 
         emit logMessage(log);
-
-        // Future: emit structured signal
-        // emit realtimeDataReceived(rtd);
 
     } else {
         QString logText = QString("📥 [GIMBAL CMD 0x%1] Size %2 from %3:%4")

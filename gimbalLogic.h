@@ -16,6 +16,8 @@ private:
     UdpWorker     *m_worker = nullptr;
     QThread       *m_thread = nullptr;
     SbgcProtocol  *gimbalProtocol = nullptr;
+    bool           m_ownsWorker = true;
+    quint8         m_deviceAddr = 0x02;
 
 public:
     Settings::TargetControlInfo gimbalNetInfo;
@@ -24,7 +26,7 @@ public:
     gimbalLogic();
     ~gimbalLogic();
 
-    int loadGimbalSettings(Settings* settings);
+    int loadGimbalSettings(Settings* settings, UdpWorker* sharedWorker = nullptr);
 
     // Метод для установки сервера (вызывается из MainWindow)
     void setServer(const QHostAddress &addr, quint16 port);
