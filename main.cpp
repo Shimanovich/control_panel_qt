@@ -1,8 +1,10 @@
 #define SDL_MAIN_HANDLED
 
 #include "cameralogic.h"
+#include "gimbalLogic.h"
 #include "mainwindow.h"
 #include "udpworker.h"
+#include "networkmanager.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -15,8 +17,8 @@
 
 MainWindow * w;
 cameraLogic * cam;
-UdpWorker * sharedUdpWorker;
-QThread * udpThread;
+gimbalLogic * gimbal;
+NetworkManager * networkManager;
 
 
 int main(int argc, char *argv[])
@@ -30,31 +32,15 @@ int main(int argc, char *argv[])
 
     Settings* settings = Settings::instance();
 
-    // === ЦЕНТРАЛИЗОВАННЫЙ UDP (один IP:port для всех устройств) ===
-    sharedUdpWorker = new UdpWorker();
-    udpThread = new QThread();
-    sharedUdpWorker->moveToThread(udpThread);
-
-    // Устанавливаем target из настроек (один для всех)
-    auto targetInfo = settings->getTargetControl();
-    sharedUdpWorker->setTarget(QHostAddress(targetInfo.ip), targetInfo.port);
-
-    MainWindow::connect(udpThread, &QThread::started, sharedUdpWorker, &UdpWorker::init);
-    udpThread->start();
+    // === ЦЕНТРАЛИЗОВАННЫЙ NETWORK MANAGER ===
+    networkManager = new NetworkManager();
+    networkManager->init(settings);
 
     cam  = new cameraLogic();
-    cam->loadCameraSettings(settings, sharedUdpWorker);  // передаём shared worker
+    cam->loadCameraSettings(settings, networkManager->getWorker());
 
-
-    // qDebug() << "Пользователь:" << settings->getUsername();
-    // qDebug() << "Тёмная тема:" << settings->isDarkMode();
-    // qDebug() << "Размер окна:" << settings->getWindowSize();
-
-    // // Изменяем настройки
-    // settings->setDarkMode(false);
-    // settings->setAccentColor(QColor("#FF5722"));
-    // settings->addRecentFile("C:/projects/myapp/main.cpp");
-
+    gimbal = new gimbalLogic();
+    gimbal->loadGimbalSettings(settings, networkManager->getWorker());
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -66,9 +52,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    w = new MainWindow(cam);
-
-   // w.setCamPrt(cam);
+    w = new MainWindow(cam, gimbal);
 
     w->show();
     return a.exec();
