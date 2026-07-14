@@ -18,6 +18,8 @@ private:
     bool           m_ownsWorker = true;
     quint8         m_deviceAddr = 0x02;
 
+    void sendWithAddr(const QByteArray &payload);
+
 public:
     Settings::TargetControlInfo gimbalNetInfo;
 
@@ -41,7 +43,7 @@ public slots:
 
 signals:
     void logMessage(const QString &message);
-    void realtimeDataReceived(const SBGC_cmd_realtime_data_t &data);  // structured signal
+    void realtimeDataReceived(const SBGC_cmd_realtime_data_t &data);
 };
 
 #endif // GIMBALLOGIC_H
