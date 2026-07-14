@@ -10,18 +10,6 @@ class Settings : public QObject
     Q_OBJECT
 
 public:
-
-    struct DeviceAddresses {
-        quint8 camera = 0x01;
-        quint8 gimbal = 0x02;
-        quint8 laser  = 0x03;
-        // при добавлении новых устройств — просто расширяете структуру
-    };
-
-    DeviceAddresses getDeviceAddresses();
-    quint8 getCameraDeviceAddress();
-
-
     struct TargetControlInfo
     {
         QString ip;
@@ -31,6 +19,11 @@ public:
         //bool    enabled = true;
     };
 
+    struct DeviceAddresses {
+        quint8 camera = 0x01;
+        quint8 gimbal = 0x02;
+        quint8 laser  = 0x03;
+    };
 
 public:
     static Settings* instance();
@@ -40,6 +33,10 @@ public:
 
     //get target ip and port
     TargetControlInfo getTargetControl();
+
+    DeviceAddresses getDeviceAddresses();
+    quint8 getGimbalDeviceAddress();
+    quint8 getCameraDeviceAddress();
 
     // Основные настройки
     void sync();

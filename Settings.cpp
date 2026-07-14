@@ -5,23 +5,6 @@
 
 Settings* Settings::s_instance = nullptr;
 
-Settings::DeviceAddresses Settings::getDeviceAddresses()
-{
-    DeviceAddresses addrs;
-    m_settings.beginGroup("deviceAddresses");
-    addrs.camera = m_settings.value("camera", 0x01).toUInt() & 0xFF;
-    addrs.gimbal = m_settings.value("gimbal", 0x02).toUInt() & 0xFF;
-    addrs.laser  = m_settings.value("laser",  0x03).toUInt() & 0xFF;
-    m_settings.endGroup();
-    return addrs;
-}
-
-quint8 Settings::getCameraDeviceAddress()
-{
-    return getDeviceAddresses().camera;
-}
-
-
 Settings* Settings::instance()
 {
     if (!s_instance)
@@ -71,99 +54,26 @@ Settings::TargetControlInfo Settings::getTargetControl()
     return info;
 }
 
+Settings::DeviceAddresses Settings::getDeviceAddresses()
+{
+    DeviceAddresses addrs;
+    m_settings.beginGroup("deviceAddresses");
+    addrs.camera = m_settings.value("camera", 0x01).toUInt() & 0xFF;
+    addrs.gimbal = m_settings.value("gimbal", 0x02).toUInt() & 0xFF;
+    addrs.laser  = m_settings.value("laser",  0x03).toUInt() & 0xFF;
+    m_settings.endGroup();
+    return addrs;
+}
 
-// QString Settings::fileName() const
-// {
-//     return m_settings.fileName();
-// }
+quint8 Settings::getGimbalDeviceAddress()
+{
+    return getDeviceAddresses().gimbal;
+}
 
-// void Settings::loadDefaults()
-// {
-//     // // Устанавливаем значения по умолчанию
-//     // m_settings.setValue("username",     m_settings.value("username", "Гость").toString());
-//     // m_settings.setValue("darkMode",     m_settings.value("darkMode", true).toBool());
-//     // m_settings.setValue("accentColor",  m_settings.value("accentColor", "#007AFF").toString());
-
-//     // QSize defaultSize(1280, 720);
-//     // m_settings.setValue("window/size",  m_settings.value("window/size", defaultSize).toSize());
-// }
-
-// QString Settings::getUsername() const
-// {
-//     return m_settings.value("username", "Гость").toString();
-// }
-
-// void Settings::setUsername(const QString &username)
-// {
-//     if (getUsername() != username) {
-//         m_settings.setValue("username", username);
-//         sync();
-//         emit settingsChanged();
-//     }
-// }
-
-// QSize Settings::getWindowSize() const
-// {
-//     return m_settings.value("window/size", QSize(1280, 720)).toSize();
-// }
-
-// void Settings::setWindowSize(const QSize &size)
-// {
-//     if (getWindowSize() != size) {
-//         m_settings.setValue("window/size", size);
-//         sync();
-//         emit settingsChanged();
-//     }
-// }
-
-// bool Settings::isDarkMode() const
-// {
-//     return m_settings.value("darkMode", true).toBool();
-// }
-
-// void Settings::setDarkMode(bool enabled)
-// {
-//     if (isDarkMode() != enabled) {
-//         m_settings.setValue("darkMode", enabled);
-//         sync();
-//         emit settingsChanged();
-//     }
-// }
-
-// QColor Settings::getAccentColor() const
-// {
-//     return QColor(m_settings.value("accentColor", "#007AFF").toString());
-// }
-
-// void Settings::setAccentColor(const QColor &color)
-// {
-//     if (getAccentColor() != color) {
-//         m_settings.setValue("accentColor", color.name());
-//         sync();
-//         emit settingsChanged();
-//     }
-// }
-
-// QStringList Settings::getRecentFiles() const
-// {
-//     return m_settings.value("recentFiles").toStringList();
-// }
-
-// void Settings::addRecentFile(const QString &filePath)
-// {
-//     if (filePath.isEmpty()) return;
-
-//     QStringList files = getRecentFiles();
-//     files.removeAll(filePath);
-//     files.prepend(filePath);
-
-//     if (files.size() > 10)
-//         files.removeLast();
-
-//     m_settings.setValue("recentFiles", files);
-//     sync();
-//     emit settingsChanged();
-// }
+quint8 Settings::getCameraDeviceAddress()
+{
+    return getDeviceAddresses().camera;
+}
 
 void Settings::sync()
 {
