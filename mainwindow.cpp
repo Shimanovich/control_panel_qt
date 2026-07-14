@@ -93,10 +93,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::setCamPrt(cameraLogic *camPtr)
-{
-    this->m_cam = camPtr;
-}
+// void MainWindow::setCamPrt(cameraLogic *camPtr)
+// {
+//     this->m_cam = camPtr;
+// }
 
 void MainWindow::onSetServerClicked()
 {
