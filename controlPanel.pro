@@ -1,17 +1,17 @@
 QT       += core gui widgets network
 
-# Force g++ to avoid lld atomic issues
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+# Force g++ (решает atomic)
 QMAKE_CXX = g++
 QMAKE_LINK = g++
 QMAKE_LINK_SHLIB = g++
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
 CONFIG += c++17
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_NO_ENTRYPOINT
+
+QMAKE_LFLAGS += -Wl,--allow-multiple-definition
 
 # SDL2
 SDL2_PATH = d:/work/SDL2-2.0.14/x86_64-w64-mingw32/
@@ -19,6 +19,9 @@ SDL2_PATH = d:/work/SDL2-2.0.14/x86_64-w64-mingw32/
 INCLUDEPATH += $$SDL2_PATH/include
 
 LIBS += -L$$SDL2_PATH/lib -lSDL2
+
+# Копирование DLL...
+# (остальной код без изменений)
 
 # Копирование DLL в папку сборки (чтобы не копировать вручную)
 CONFIG(debug, debug|release) {
