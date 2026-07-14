@@ -17,6 +17,17 @@ cameraLogic::~cameraLogic()
     }
 }
 
+
+void cameraLogic::sendWithAddr(const QByteArray &payload)
+{
+    if (m_worker) {
+        QByteArray fullMessage;
+        fullMessage.append(static_cast<char>(m_deviceAddr));
+        fullMessage.append(payload);
+        m_worker->enqueueSend(fullMessage);
+    }
+}
+
 int cameraLogic::loadCameraSettings(Settings* settings, UdpWorker* sharedWorker)
 {
     if (!settings) return 0;
@@ -54,15 +65,7 @@ int cameraLogic::loadCameraSettings(Settings* settings, UdpWorker* sharedWorker)
     return 1;
 }
 
-void cameraLogic::sendWithAddr(const QByteArray &payload)
-{
-    if (m_worker) {
-        QByteArray fullMessage;
-        fullMessage.append(static_cast<char>(m_deviceAddr));
-        fullMessage.append(payload);
-        m_worker->enqueueSend(fullMessage);
-    }
-}
+
 
 void cameraLogic::setServer(const QHostAddress &addr, quint16 port)
 {

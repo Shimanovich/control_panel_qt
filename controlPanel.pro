@@ -1,5 +1,10 @@
 QT       += core gui widgets network
 
+# Force g++ to avoid lld atomic issues
+QMAKE_CXX = g++
+QMAKE_LINK = g++
+QMAKE_LINK_SHLIB = g++
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17

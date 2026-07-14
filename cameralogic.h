@@ -28,6 +28,8 @@ public:
     // ip адрес и порт для камеры
     Settings::TargetControlInfo camNetInfo;
 
+    void sendWithAddr(const QByteArray &payload);
+
 public:
     cameraLogic();
     ~cameraLogic();
