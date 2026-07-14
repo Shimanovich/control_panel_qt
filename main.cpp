@@ -2,6 +2,7 @@
 
 #include "cameralogic.h"
 #include "mainwindow.h"
+#include "udpworker.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -10,9 +11,12 @@
 
 #include <QCoreApplication>
 #include <QDebug>
+#include <QThread>
 
 MainWindow * w;
 cameraLogic * cam;
+UdpWorker * sharedUdpWorker;
+QThread * udpThread;
 
 
 int main(int argc, char *argv[])
@@ -26,8 +30,20 @@ int main(int argc, char *argv[])
 
     Settings* settings = Settings::instance();
 
+    // === ЦЕНТРАЛИЗОВАННЫЙ UDP (один IP:port для всех устройств) ===
+    sharedUdpWorker = new UdpWorker();
+    udpThread = new QThread();
+    sharedUdpWorker->moveToThread(udpThread);
+
+    // Устанавливаем target из настроек (один для всех)
+    auto targetInfo = settings->getTargetControl();
+    sharedUdpWorker->setTarget(QHostAddress(targetInfo.ip), targetInfo.port);
+
+    connect(udpThread, &QThread::started, sharedUdpWorker, &UdpWorker::init);
+    udpThread->start();
+
     cam  = new cameraLogic();
-    cam->loadCameraSettings(settings);
+    cam->loadCameraSettings(settings, sharedUdpWorker);  // передаём shared worker
 
 
     // qDebug() << "Пользователь:" << settings->getUsername();
