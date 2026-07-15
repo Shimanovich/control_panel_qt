@@ -1,4 +1,5 @@
 #include "cameralogic.h"
+#include "gimbalLogic.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -27,6 +28,9 @@ int main(int argc, char *argv[])
     cam  = new cameraLogic();
     cam->loadCameraSettings(settings);
 
+    gimbalLogic *gim = new gimbalLogic();           // ← добавить
+    gim->loadGimbalSettings(settings);              // ← если метод есть (аналогично камере)
+
 
     // qDebug() << "Пользователь:" << settings->getUsername();
     // qDebug() << "Тёмная тема:" << settings->isDarkMode();
@@ -48,7 +52,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    w = new MainWindow(cam);
+    w = new MainWindow(cam, gim);
 
     // w.setCamPrt(cam);
 
@@ -58,6 +62,7 @@ int main(int argc, char *argv[])
     // Cleanup
     delete w;
     delete cam;
+    delete gim;
     // Singleton not deleted (intentional for now)
 
     return ret;
