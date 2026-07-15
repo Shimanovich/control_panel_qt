@@ -11,6 +11,8 @@ CONFIG += c++17
 
 DEFINES += QT_NO_ENTRYPOINT
 
+DEFINES += SDL_MAIN_HANDLED
+
 QMAKE_LFLAGS += -Wl,--allow-multiple-definition
 
 # SDL2

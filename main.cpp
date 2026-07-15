@@ -10,37 +10,24 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-MainWindow * w;
-cameraLogic * cam;
-
+MainWindow * w = nullptr;
+cameraLogic * cam = nullptr;
+gimbalLogic * gim = nullptr;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-
-    // Устанавливаем название компании и приложения
     QCoreApplication::setOrganizationName("MyCompany");
     QCoreApplication::setApplicationName("MyAwesomeApp");
 
     Settings* settings = Settings::instance();
 
-    cam  = new cameraLogic();
+    cam = new cameraLogic();
     cam->loadCameraSettings(settings);
 
-    gimbalLogic *gim = new gimbalLogic();           // ← добавить
-    gim->loadGimbalSettings(settings);              // ← если метод есть (аналогично камере)
-
-
-    // qDebug() << "Пользователь:" << settings->getUsername();
-    // qDebug() << "Тёмная тема:" << settings->isDarkMode();
-    // qDebug() << "Размер окна:" << settings->getWindowSize();
-
-    // // Изменяем настройки
-    // settings->setDarkMode(false);
-    // settings->setAccentColor(QColor("#FF5722"));
-    // settings->addRecentFile("C:/projects/myapp/main.cpp");
-
+    gim = new gimbalLogic();
+    gim->loadGimbalSettings(settings);   // если метода нет — закомментируйте
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -54,16 +41,17 @@ int main(int argc, char *argv[])
 
     w = new MainWindow(cam, gim);
 
-    // w.setCamPrt(cam);
-
     w->show();
     int ret = a.exec();
-
-    // Cleanup
+    w->hide();
     delete w;
+    w = nullptr;
+
     delete cam;
+    cam = nullptr;
+
     delete gim;
-    // Singleton not deleted (intentional for now)
+    gim = nullptr;
 
     return ret;
 }
