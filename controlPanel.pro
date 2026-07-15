@@ -20,22 +20,7 @@ INCLUDEPATH += $$SDL2_PATH/include
 
 LIBS += -L$$SDL2_PATH/lib -lSDL2
 
-# Копирование DLL...
-# (остальной код без изменений)
 
-# Копирование DLL в папку сборки (чтобы не копировать вручную)
-CONFIG(debug, debug|release) {
-    SDL2_DLL = $$SDL2_PATH/bin/SDL2.dll
-} else {
-    SDL2_DLL = $$SDL2_PATH/bin/SDL2.dll
-}
-
-
-copydata.commands = $(COPY_FILE) \"$$shell_path($$SDL2_DLL)\" \"$$shell_path($$OUT_PWD)\"
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
 
 SOURCES += \
     Settings.cpp \

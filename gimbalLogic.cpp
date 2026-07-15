@@ -91,12 +91,12 @@ void gimbalLogic::onReceived(const QByteArray &data, const QHostAddress &sender,
         std::memcpy(&rtd, payload.constData() + 4, sizeof(rtd));
 
         QString log = QString("📊 [GIMBAL REALTIME_DATA_4 addr=0x%1] Angles IMU: %2° %3° %4° | Battery %5V | Current %6mA")
-                        .arg(m_deviceAddr, 2, 16, QChar('0'))
-                        .arg(rtd.imu_angle[0]*360.0/16384, 0, 'f', 1)
-                        .arg(rtd.imu_angle[1]*360.0/16384, 0, 'f', 1)
-                        .arg(rtd.imu_angle[2]*360.0/16384, 0, 'f', 1)
-                        .arg(rtd.battery_voltage / 100.0, 0, 'f', 2)
-                        .arg(rtd.current);
+                          .arg(m_deviceAddr, 2, 16, QChar('0'))
+                          .arg(rtd.imu_angle[0]*360.0/16384, 0, 'f', 1)
+                          .arg(rtd.imu_angle[1]*360.0/16384, 0, 'f', 1)
+                          .arg(rtd.imu_angle[2]*360.0/16384, 0, 'f', 1)
+                          .arg(rtd.battery_voltage / 100.0, 0, 'f', 2)
+                          .arg(rtd.current);
         emit logMessage(log);
 
         emit realtimeDataReceived(rtd);

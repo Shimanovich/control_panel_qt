@@ -25,6 +25,8 @@ public:
     QList<int> cameraZoomPosList;
     int zoom_index = 0;
 
+    void (*sendCallback)(const QByteArray &payload) = nullptr;
+
     // ip адрес и порт для камеры
     Settings::TargetControlInfo camNetInfo;
 
