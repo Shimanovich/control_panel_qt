@@ -50,4 +50,4 @@ private:
     bool m_destroyed = false;  // guard
 };
 
-#endif // SETTINGS_H
+

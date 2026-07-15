@@ -45,11 +45,8 @@ int main(int argc, char *argv[])
     int ret = a.exec();
     w->hide();
 
-<<<<<<< HEAD
-    delete w;
-    cam->deleteLater();
-    gim->deleteLater();
-=======
+
+
     if (w) {
         delete w;
         w = nullptr;
@@ -65,7 +62,7 @@ int main(int argc, char *argv[])
     }
 
     // Settings singleton lives until app exit
->>>>>>> remotes/github/master
+
 
     return ret;
 }
