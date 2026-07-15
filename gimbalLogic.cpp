@@ -10,8 +10,18 @@ gimbalLogic::gimbalLogic()
 
 gimbalLogic::~gimbalLogic()
 {
-    if (m_ownsWorker) {
-        delete m_worker;
+    if (m_thread) {
+        m_thread->quit();
+        if (!m_thread->wait(2000)) {
+            m_thread->terminate();
+            m_thread->wait();
+        }
+        delete m_thread;
+        m_thread = nullptr;
+    }
+    if (m_ownsWorker && m_worker) {
+        m_worker->deleteLater();
+        m_worker = nullptr;
     }
 }
 
@@ -33,6 +43,14 @@ int gimbalLogic::loadGimbalSettings(Settings* settings, UdpWorker* sharedWorker)
         m_ownsWorker = true;
         m_worker = new UdpWorker();
         m_worker->setTarget(QHostAddress(gimbalNetInfo.ip), gimbalNetInfo.port);
+
+        m_thread = new QThread();  // NO parent to avoid heap issues
+        m_worker->moveToThread(m_thread);
+
+        connect(m_thread, &QThread::started, m_worker, &UdpWorker::init);
+        connect(m_worker, &UdpWorker::received, this, &gimbalLogic::onReceived, Qt::QueuedConnection);
+
+        m_thread->start();
     }
 
     gimbalProtocol->setSendFunction([this](const QByteArray &sbgcPacket) {

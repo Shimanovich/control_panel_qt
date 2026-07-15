@@ -14,6 +14,7 @@ class gimbalLogic : public QObject
 
 private:
     UdpWorker     *m_worker = nullptr;
+    QThread       *m_thread = nullptr;
     SbgcProtocol  *gimbalProtocol = nullptr;
     bool           m_ownsWorker = true;
     quint8         m_deviceAddr = 0x02;
