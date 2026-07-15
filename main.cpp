@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     cam->loadCameraSettings(settings);
 
     gim = new gimbalLogic();
-    gim->loadGimbalSettings(settings);   // если метода нет — закомментируйте
+    gim->loadGimbalSettings(settings);
 
     QTranslator translator;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -44,14 +44,22 @@ int main(int argc, char *argv[])
     w->show();
     int ret = a.exec();
     w->hide();
-    delete w;
-    w = nullptr;
 
-    delete cam;
-    cam = nullptr;
+    if (w) {
+        delete w;
+        w = nullptr;
+    }
 
-    delete gim;
-    gim = nullptr;
+    if (cam) {
+        cam->deleteLater();
+        cam = nullptr;
+    }
+    if (gim) {
+        gim->deleteLater();
+        gim = nullptr;
+    }
+
+    // Settings singleton lives until app exit
 
     return ret;
 }
