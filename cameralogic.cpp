@@ -8,12 +8,18 @@ cameraLogic::cameraLogic()
 
 cameraLogic::~cameraLogic()
 {
-    if (m_ownsWorker && m_thread && m_thread->isRunning()) {
+    if (m_thread) {
         m_thread->quit();
-        m_thread->wait(3000);
+        if (!m_thread->wait(2000)) {
+            m_thread->terminate();
+            m_thread->wait();
+        }
+        delete m_thread;
+        m_thread = nullptr;
     }
-    if (m_ownsWorker) {
-        delete m_worker;
+    if (m_ownsWorker && m_worker) {
+        m_worker->deleteLater();
+        m_worker = nullptr;
     }
 }
 
@@ -49,11 +55,11 @@ int cameraLogic::loadCameraSettings(Settings* settings, UdpWorker* sharedWorker)
         m_worker = new UdpWorker();
         m_worker->setTarget(QHostAddress(camNetInfo.ip), camNetInfo.port);
 
-        m_thread = new QThread(this);
+        m_thread = new QThread();  // NO parent!
         m_worker->moveToThread(m_thread);
 
         connect(m_thread, &QThread::started, m_worker, &UdpWorker::init);
-        connect(m_worker, &UdpWorker::received, this, &cameraLogic::onReceived);
+        connect(m_worker, &UdpWorker::received, this, &cameraLogic::onReceived, Qt::QueuedConnection);
 
         m_thread->start();
     }
