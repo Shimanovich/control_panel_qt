@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     w = new MainWindow(cam);
 
-   // w.setCamPrt(cam);
+    // w.setCamPrt(cam);
 
     w->show();
     int ret = a.exec();
