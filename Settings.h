@@ -14,9 +14,6 @@ public:
     {
         QString ip;
         int     port = 1020;
-        //QString protocol = "tcp";
-        //int     timeoutMs = 5000;
-        //bool    enabled = true;
     };
 
     struct DeviceAddresses {
@@ -28,17 +25,14 @@ public:
 public:
     static Settings* instance();
 
-    /*load zoom positions from ini file */
     QList<int> getZoomPositions();
 
-    //get target ip and port
     TargetControlInfo getTargetControl();
 
     DeviceAddresses getDeviceAddresses();
     quint8 getGimbalDeviceAddress();
     quint8 getCameraDeviceAddress();
 
-    // Основные настройки
     void sync();
 
 signals:
@@ -53,4 +47,7 @@ private:
     QSettings m_settings;
 
     static Settings* s_instance;
+    bool m_destroyed = false;  // guard
 };
+
+#endif // SETTINGS_H

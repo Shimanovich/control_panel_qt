@@ -2,6 +2,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
+#include <QFile>
 
 Settings* Settings::s_instance = nullptr;
 
@@ -23,10 +24,12 @@ Settings::Settings(QObject *parent)
 
 Settings::~Settings()
 {
+    if (m_destroyed) return;
+    m_destroyed = true;
     sync();
+    s_instance = nullptr;
 }
 
-// add your settings here
 QList<int> Settings::getZoomPositions()
 {
     QList<int> posList;
@@ -79,3 +82,5 @@ void Settings::sync()
 {
     m_settings.sync();
 }
+
+void Settings::loadDefaults() {}
