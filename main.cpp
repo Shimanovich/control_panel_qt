@@ -47,11 +47,9 @@ int main(int argc, char *argv[])
     delete w;
     w = nullptr;
 
-    delete cam;
-    cam = nullptr;
-
-    delete gim;
-    gim = nullptr;
+    delete w;
+    cam->deleteLater();
+    gim->deleteLater();
 
     return ret;
 }
